@@ -3240,6 +3240,7 @@ int mysql_check_insert_select_ex(THD *thd, table_info_t* table_info)
     List<Item> fields = thd->lex->field_list;
     List_iterator<Item> it(fields);
     MYSQL*          mysql;
+    char*           db_name;
 
     if (thd->lex->field_list.elements == 0)
     {
@@ -3302,7 +3303,7 @@ int mysql_check_insert_select_ex(THD *thd, table_info_t* table_info)
         str_select = str_init(&str);
         sql_statement = thd_query_with_length(thd);
         sql_p = sql_statement;
-        if (!mysql_check_version_56(thd))
+        if (!mysql_check_version_56(thd) || !strcmp(table_info->db_name,"backup_tables"))
         {
             while (*sql_p)
             {
@@ -3318,7 +3319,14 @@ int mysql_check_insert_select_ex(THD *thd, table_info_t* table_info)
         str_append(str_select, "EXPLAIN ");
         str_append(str_select, sql_p);
         my_free(sql_statement);
-        if (mysql_get_explain_info(thd, mysql, str_get(str_select), &explain, TRUE, table_info->db_name))
+        if (!strcmp(table_info->db_name,"backup_tables"))
+        {
+            db_name = thd->lex->last_table()->db ;
+        }
+        else {
+	          db_name = table_info->db_name ;
+        }
+        if (mysql_get_explain_info(thd, mysql, str_get(str_select), &explain, TRUE, db_name))
         {
             str_deinit(str_select);
             DBUG_RETURN(FALSE);

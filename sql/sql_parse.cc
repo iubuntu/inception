@@ -3258,7 +3258,7 @@ int mysql_check_insert_select_ex(THD *thd, table_info_t* table_info)
               thd->lex->current_select->item_list.elements))) ||
             (thd->lex->select_lex.with_wild && 
             LIST_GET_LEN(table_info->field_lst) != 
-            thd->lex->current_select->item_list.elements))
+            thd->lex->current_select->item_list.elements) && strcmp(table_info->db_name,"backup_tables"))
     {
         my_error(ER_WRONG_VALUE_COUNT_ON_ROW, MYF(0), 1L);
         mysql_errmsg_append(thd);

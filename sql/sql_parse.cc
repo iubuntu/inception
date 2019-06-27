@@ -3242,7 +3242,7 @@ int mysql_check_insert_select_ex(THD *thd, table_info_t* table_info)
     MYSQL*          mysql;
     char*           db_name;
 
-    if (thd->lex->field_list.elements == 0)
+    if (thd->lex->field_list.elements == 0 && strcmp(table_info->db_name,"backup_tables"))
     {
         my_error(ER_WITH_INSERT_FIELD, MYF(0));
         mysql_errmsg_append(thd);

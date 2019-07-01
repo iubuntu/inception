@@ -433,7 +433,7 @@ static SYMBOL symbols[] = {
   { "PLUGIN_DIR",       SYM(PLUGIN_DIR_SYM)},
   { "POINT",		SYM(TEXT_SYM)},
   { "JSON",		SYM(TEXT_SYM)},
-  { "POLYGON",		SYM(POLYGON)},
+  { "POLYGON",		SYM(TEXT_SYM)},
   { "PORT",		SYM(PORT_SYM)},
   { "PRECISION",	SYM(PRECISION)},
   { "PREPARE",          SYM(PREPARE_SYM)},

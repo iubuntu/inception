@@ -1723,7 +1723,7 @@ bool my_yyoverflow(short **a, YYSTYPE **b, ulong *yystacksize);
         udf_type if_exists opt_local opt_table_options table_options
         table_option opt_if_not_exists opt_no_write_to_binlog
         opt_temporary all_or_any opt_distinct
-        opt_ignore_leaves fulltext_options /*spatial_type*/ union_option
+        opt_ignore_leaves fulltext_options spatial_type union_option
         union_opt select_derived_init transaction_access_mode_types
         opt_natural_language_mode opt_query_expansion
         opt_ev_status opt_ev_on_completion ev_on_completion opt_ev_comment
@@ -1790,7 +1790,7 @@ bool my_yyoverflow(short **a, YYSTYPE **b, ulong *yystacksize);
         option_type opt_var_type opt_var_ident_type
 
 %type <key_type>
-        normal_key_type opt_unique constraint_key_type fulltext /*spatial*/
+        normal_key_type opt_unique constraint_key_type fulltext spatial
 
 %type <key_alg>
         btree_or_rtree
@@ -1894,8 +1894,8 @@ bool my_yyoverflow(short **a, YYSTYPE **b, ulong *yystacksize);
         view_check_option trigger_tail sp_tail sf_tail udf_tail event_tail
         install uninstall partition_entry binlog_base64_event
         init_key_options normal_key_options normal_key_opts all_key_opt 
-        /*spatial_key_options*/ fulltext_key_options normal_key_opt 
-        fulltext_key_opt /*spatial_key_opt*/ fulltext_key_opts /*spatial_key_opts*/
+        spatial_key_options fulltext_key_options normal_key_opt
+        fulltext_key_opt spatial_key_opt fulltext_key_opts spatial_key_opts
         key_using_alg
         part_column_list
         server_def server_options_list server_option
@@ -2257,18 +2257,18 @@ create:
               MYSQL_YYABORT;
           }
           opt_index_lock_algorithm { }
-//         | CREATE spatial INDEX_SYM ident init_key_options ON
-//           table_ident
-//           {
-//             if (add_create_index_prepare(Lex, $7))
-//               MYSQL_YYABORT;
-//           }
-//           '(' key_list ')' spatial_key_options
-//           {
-//             if (add_create_index(Lex, $2, $4))
-//               MYSQL_YYABORT;
-//           }
-//           opt_index_lock_algorithm { }
+         | CREATE spatial INDEX_SYM ident init_key_options ON
+           table_ident
+           {
+             if (add_create_index_prepare(Lex, $7))
+               MYSQL_YYABORT;
+           }
+           '(' key_list ')' spatial_key_options
+           {
+             if (add_create_index(Lex, $2, $4))
+               MYSQL_YYABORT;
+           }
+           opt_index_lock_algorithm { }
         | CREATE DATABASE opt_if_not_exists ident
           {
             Lex->create_info.default_table_charset= NULL;
@@ -6091,12 +6091,12 @@ key_def:
             if (add_create_index (Lex, $1, $3))
               MYSQL_YYABORT;
           }
-//         | spatial opt_key_or_index opt_ident init_key_options 
-//             '(' key_list ')' spatial_key_options
-//           {
-//             if (add_create_index (Lex, $1, $3))
-//               MYSQL_YYABORT;
-//           }
+        | spatial opt_key_or_index opt_ident init_key_options
+            '(' key_list ')' spatial_key_options
+          {
+            if (add_create_index (Lex, $1, $3))
+              MYSQL_YYABORT;
+          }
         | opt_constraint constraint_key_type opt_ident key_alg
           '(' key_list ')' normal_key_options
           {
@@ -6287,18 +6287,18 @@ type:
             Lex->charset=&my_charset_bin;
             $$=MYSQL_TYPE_BLOB;
           }
-//         | spatial_type
-//           {
-// #ifdef HAVE_SPATIAL
-//             Lex->charset=&my_charset_bin;
-//             Lex->uint_geom_type= (uint)$1;
-//             $$=MYSQL_TYPE_GEOMETRY;
-// #else
-//             my_error(ER_FEATURE_DISABLED, MYF(0),
-//                      sym_group_geom.name, sym_group_geom.needed_define);
-//             MYSQL_YYABORT;
-// #endif
-//           }
+        | spatial_type
+          {
+#ifdef HAVE_SPATIAL
+            Lex->charset=&my_charset_bin;
+            Lex->uint_geom_type= (uint)$1;
+            $$=MYSQL_TYPE_GEOMETRY;
+#else
+            my_error(ER_FEATURE_DISABLED, MYF(0),
+                     sym_group_geom.name, sym_group_geom.needed_define);
+            MYSQL_YYABORT;
+#endif
+          }
         | MEDIUMBLOB
           {
             Lex->charset=&my_charset_bin;
@@ -6348,20 +6348,20 @@ type:
           }
         ;
 
-// spatial_type:
-//           GEOMETRY_SYM        { $$= Field::GEOM_GEOMETRY; }
-//         | GEOMETRYCOLLECTION  { $$= Field::GEOM_GEOMETRYCOLLECTION; }
-//         | POINT_SYM
-//           {
-//             Lex->length= (char*)"25";
-//             $$= Field::GEOM_POINT;
-//           }
-//         | MULTIPOINT          { $$= Field::GEOM_MULTIPOINT; }
-//         | LINESTRING          { $$= Field::GEOM_LINESTRING; }
-//         | MULTILINESTRING     { $$= Field::GEOM_MULTILINESTRING; }
-//         | POLYGON             { $$= Field::GEOM_POLYGON; }
-//         | MULTIPOLYGON        { $$= Field::GEOM_MULTIPOLYGON; }
-//         ;
+spatial_type:
+          GEOMETRY_SYM        { $$= Field::GEOM_GEOMETRY; }
+        | GEOMETRYCOLLECTION  { $$= Field::GEOM_GEOMETRYCOLLECTION; }
+        | POINT_SYM
+          {
+            Lex->length= (char*)"25";
+            $$= Field::GEOM_POINT;
+          }
+        | MULTIPOINT          { $$= Field::GEOM_MULTIPOINT; }
+        | LINESTRING          { $$= Field::GEOM_LINESTRING; }
+        | MULTILINESTRING     { $$= Field::GEOM_MULTILINESTRING; }
+        | POLYGON             { $$= Field::GEOM_POLYGON; }
+        | MULTIPOLYGON        { $$= Field::GEOM_MULTIPOLYGON; }
+        ;
 
 char:
           CHAR_SYM {}
@@ -6919,18 +6919,18 @@ fulltext:
           FULLTEXT_SYM { $$= Key::FULLTEXT;}
         ;
 
-// spatial:
-//           SPATIAL_SYM
-//           {
-// #ifdef HAVE_SPATIAL
-//             $$= Key::SPATIAL;
-// #else
-//             my_error(ER_FEATURE_DISABLED, MYF(0),
-//                      sym_group_geom.name, sym_group_geom.needed_define);
-//             MYSQL_YYABORT;
-// #endif
-//           }
-//        ;
+spatial:
+          SPATIAL_SYM
+          {
+#ifdef HAVE_SPATIAL
+            $$= Key::SPATIAL;
+#else
+            my_error(ER_FEATURE_DISABLED, MYF(0),
+                     sym_group_geom.name, sym_group_geom.needed_define);
+            MYSQL_YYABORT;
+#endif
+          }
+       ;
 
 init_key_options:
           {
@@ -6959,20 +6959,20 @@ fulltext_key_options:
         | fulltext_key_opts
         ;
 
-// spatial_key_options:
-//           /* empty */ {}
-//         | spatial_key_opts
-//         ;
+spatial_key_options:
+          /* empty */ {}
+        | spatial_key_opts
+        ;
 
 normal_key_opts:
           normal_key_opt
         | normal_key_opts normal_key_opt
         ;
 
-// spatial_key_opts:
-//           spatial_key_opt
-//         | spatial_key_opts spatial_key_opt
-//         ;
+spatial_key_opts:
+          spatial_key_opt
+        | spatial_key_opts spatial_key_opt
+        ;
 
 fulltext_key_opts:
           fulltext_key_opt
@@ -6995,9 +6995,9 @@ normal_key_opt:
         | key_using_alg
         ;
 
-// spatial_key_opt:
-//           all_key_opt
-//         ;
+spatial_key_opt:
+          all_key_opt
+        ;
 
 fulltext_key_opt:
           all_key_opt

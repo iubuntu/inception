@@ -4910,13 +4910,25 @@ int mysql_field_is_blob(
     if (real_type== MYSQL_TYPE_BLOB ||
       real_type== MYSQL_TYPE_TINY_BLOB ||
       real_type== MYSQL_TYPE_MEDIUM_BLOB ||
-      real_type== MYSQL_TYPE_LONG_BLOB)
+      real_type== MYSQL_TYPE_LONG_BLOB )
     {
         return TRUE;
     }
 
     return FALSE;
 }
+int mysql_field_is_geomerty(
+    enum enum_field_types real_type
+)
+{
+  if (real_type== MYSQL_TYPE_GEOMETRY)
+    {
+      return TRUE;
+    }
+
+  return FALSE;
+}
+
 
 int mysql_check_create_index(THD *thd)
 {
@@ -5120,7 +5132,7 @@ int mysql_check_column_default(
     {
         if (default_value->type() != Item::NULL_ITEM)
         {
-            if (mysql_field_is_blob(real_type))
+            if (mysql_field_is_blob(real_type) || mysql_field_is_geomerty(real_type))
             {
                 my_error(ER_BLOB_CANT_HAVE_DEFAULT, MYF(0), field_name);
                 mysql_errmsg_append(thd);
@@ -5349,6 +5361,7 @@ int mysql_field_check(THD* thd, Create_field* field, char* table_name)
     if (!field->def && field->unireg_check != Field::TIMESTAMP_DN_FIELD && 
         field->unireg_check != Field::TIMESTAMP_DNUN_FIELD && 
         !mysql_field_is_blob(field->sql_type) && 
+        !mysql_field_is_geomerty(field->sql_type) && 
         (field->flags & AUTO_INCREMENT_FLAG) == 0 &&
         (field->flags & PRI_KEY_FLAG) == 0)
     {
@@ -5433,7 +5446,7 @@ int mysql_check_add_column(THD *thd)
             }
         }
 
-        if (field->charset && !mysql_field_is_blob(field->sql_type))
+        if (field->charset && (!mysql_field_is_blob(field->sql_type) && !mysql_field_is_geomerty(field->sql_type)))
         {
             my_error(ER_CHARSET_ON_COLUMN, MYF(0), field->field_name,
                 thd->lex->select_lex.table_list.first->table_name);
@@ -5717,7 +5730,7 @@ int mysql_check_change_column(THD *thd)
         }
         else
         {
-            if (field->charset && !mysql_field_is_blob(field->sql_type))
+            if (field->charset && (!mysql_field_is_blob(field->sql_type) && !mysql_field_is_geomerty(field->sql_type)))
             {
                 my_error(ER_CHARSET_ON_COLUMN, MYF(0), field->field_name,
                     thd->lex->select_lex.table_list.first->table_name);

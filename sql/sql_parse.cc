@@ -3241,6 +3241,7 @@ int mysql_check_insert_select_ex(THD *thd, table_info_t* table_info)
     List_iterator<Item> it(fields);
     MYSQL*          mysql;
     char*           db_name;
+    TABLE_LIST*     explain_table;
 
     if (thd->lex->field_list.elements == 0 && strcmp(table_info->db_name,"backup_tables"))
     {
@@ -3322,12 +3323,17 @@ int mysql_check_insert_select_ex(THD *thd, table_info_t* table_info)
         str_append(str_select, "EXPLAIN ");
         str_append(str_select, sql_p);
         my_free(sql_statement);
-        if (!strcmp(table_info->db_name,"backup_tables"))
+        db_name = thd->lex->query_tables->db;
+        if (!strcmp(db_name,"backup_tables"))
         {
-            db_name = thd->lex->last_table()->db ;
-        }
-        else {
-	          db_name = table_info->db_name ;
+            for (explain_table=thd->lex->query_tables; explain_table; explain_table=explain_table->next_global)
+            {
+                if (strcmp(explain_table->db,"backup_tables"))
+                {
+                    db_name = explain_table->db;
+                    break;
+                }
+            }
         }
         if (mysql_get_explain_info(thd, mysql, str_get(str_select), &explain, TRUE, db_name))
         {

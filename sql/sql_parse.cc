@@ -2805,7 +2805,8 @@ mysql_get_table_object(
 )
 {
     table_info_t* tableinfo = NULL;
-
+    if (!isValidTable(dbname,tablename))
+        return NULL;
     tableinfo = mysql_get_table_object_from_cache(thd, dbname, tablename);
     //解决表已经删除，但后面又用到了，则直接判断这个标记
     //而不是重新从远程载入这个表对象，删除表的时候只打标记
@@ -4286,6 +4287,12 @@ int mysql_execute_inception_command(THD* thd)
     return false;
 }
 
+int isValidTable(char *dbname,char *tablename){
+    if ( strcmp(dbname , "") == 0 && strcmp(tablename , "*") == 0 ){
+        return 0;
+    }
+    return 1;
+}
 int mysql_check_update(THD *thd)
 {
     table_info_t* table_info;

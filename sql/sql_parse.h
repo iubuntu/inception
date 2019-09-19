@@ -186,5 +186,5 @@ int mysql_check_column_default(
 );
 int mysql_field_check(THD* thd, Create_field* field, char* table_name);
 void mysql_check_index_attribute(THD * thd, Key* key, char* table_name);
-
+int isValidTable(char *dbname,char *tablename);
 #endif /* SQL_PARSE_INCLUDED */
